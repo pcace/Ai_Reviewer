@@ -34,7 +34,8 @@ try {
     '-m',
     'Create independent consumer',
   ]);
-  process.stdout.write(aw(['add', process.env.REVIEW_PACKAGE || root]));
+  const packageRef = process.env.REVIEW_PACKAGE || root;
+  process.stdout.write(aw(['add', packageRef]));
   for (const file of ['review.cjs']) {
     const relative = path.join('.github/aw/ai-review', file);
     assert.equal(
@@ -52,6 +53,17 @@ try {
   );
   assert.ok(!fs.existsSync(path.join(target, 'tests')));
   assert.ok(!fs.existsSync(path.join(target, '.github/workflows/checks.yml')));
+  const helper = path.join(target, '.github/aw/ai-review/review.cjs');
+  fs.writeFileSync(helper, '// obsolete installed helper\n');
+  process.stdout.write(aw(['add', packageRef, '--force']));
+  assert.equal(
+    fs.readFileSync(helper, 'utf8'),
+    fs.readFileSync(path.join(root, '.github/aw/ai-review/review.cjs'), 'utf8')
+  );
+  assert.equal(
+    fs.readFileSync(path.join(target, '.github/review-context.md'), 'utf8'),
+    context
+  );
   const lock = path.join(target, '.github/workflows/ai-review.lock.yml');
   const installed = fs.readFileSync(lock, 'utf8');
   assert.ok(installed.includes('.github/aw/ai-review/review.cjs'));
@@ -70,7 +82,7 @@ try {
     metadata(installed)
   );
   console.log(
-    'PASS: native install preserves runtime, source hashes, project context and license; excludes development files.'
+    'PASS: native install/upgrade replaces runtime, preserves source hashes, project context and license; excludes development files.'
   );
 } finally {
   fs.rmSync(target, { recursive: true, force: true });
