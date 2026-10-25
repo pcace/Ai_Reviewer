@@ -69,6 +69,16 @@ try {
   assert.ok(installed.includes('.github/aw/ai-review/review.cjs'));
   assert.ok(!installed.includes('/home/johannes'));
   assert.ok(!installed.includes('RoadbookNavi'));
+  // Public checkouts can hide missing token scopes; private repositories cannot.
+  const preparation =
+    installed.match(/^  context:\n(?: {4}.*\n|\n)*/m)?.[0] || '';
+  for (const scope of ['contents', 'pull-requests']) {
+    assert.match(
+      preparation,
+      new RegExp(`^      ${scope}: read$`, 'm'),
+      `Preparation needs explicit ${scope}: read for private repositories.`
+    );
+  }
   process.stdout.write(
     aw(['compile', 'ai-review', '--no-check-update', '--no-logo'])
   );

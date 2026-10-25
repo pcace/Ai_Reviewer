@@ -10,7 +10,7 @@ Run from the target checkout (GitHub CLI and Node.js required):
 
 ```sh
 gh extension install github/gh-aw --pin v0.93.4
-gh aw add pcace/Ai_Reviewer@v0.1.0
+gh aw add pcace/Ai_Reviewer@v0.1.1
 gh secret set OPENROUTER_API_KEY
 gh variable set AI_REVIEW_MODEL --body openai/gpt-5.3-codex
 ```
@@ -23,7 +23,7 @@ project-specific conventions; installation does not overwrite it. Ignore generat
 To upgrade, choose the desired release tag and reinstall the **whole package**:
 
 ```sh
-gh aw add pcace/Ai_Reviewer@v0.1.0 --force
+gh aw add pcace/Ai_Reviewer@v0.1.1 --force
 ```
 
 Replace the example tag with the release you want. This replaces package-owned
