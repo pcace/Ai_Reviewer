@@ -1,0 +1,10 @@
+name: AI PR Reviewer
+min-version: v0.93.4
+description: Pi investigates code through OpenRouter; Agentic Workflows publishes reviews.
+includes:
+  - .github/workflows/ai-review.md
+resources:
+  - source: .github/aw/ai-review/review.cjs
+    destination: .github/aw/ai-review/review.cjs
+  - source: LICENSE
+    destination: .github/aw/ai-review/LICENSE
