@@ -170,6 +170,10 @@ jobs:
       (github.event_name != 'issue_comment' || github.event.issue.pull_request)
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Custom jobs do not inherit the agent's permissions.
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       ready: ${{ steps.context.outputs.ready }}
       number: ${{ steps.context.outputs.number }}
