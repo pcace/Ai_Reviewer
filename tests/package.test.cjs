@@ -1,0 +1,77 @@
+// Install the real package in a clean consumer; no application repository is touched.
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { execFileSync } = require('node:child_process');
+const root = path.resolve(__dirname, '..');
+const target = fs.mkdtempSync(
+  path.join(require('node:os').tmpdir(), 'reviewer-install-')
+);
+const run = (command, args) =>
+  execFileSync(command, args, { cwd: target, encoding: 'utf8' });
+const aw = (args) =>
+  process.env.GH_AW_BIN
+    ? run(process.env.GH_AW_BIN, args)
+    : run('gh', ['aw', ...args]);
+try {
+  run('git', ['init', '-b', 'trunk']);
+  run('git', [
+    'remote',
+    'add',
+    'origin',
+    'https://github.com/example/consumer.git',
+  ]);
+  fs.mkdirSync(path.join(target, '.github'));
+  const context = 'Consumer-specific rules must survive installation.\n';
+  fs.writeFileSync(path.join(target, '.github/review-context.md'), context);
+  run('git', ['add', '.']);
+  run('git', [
+    '-c',
+    'user.name=Package test',
+    '-c',
+    'user.email=test@example.com',
+    'commit',
+    '-m',
+    'Create independent consumer',
+  ]);
+  process.stdout.write(aw(['add', process.env.REVIEW_PACKAGE || root]));
+  for (const file of ['review.cjs']) {
+    const relative = path.join('.github/aw/ai-review', file);
+    assert.equal(
+      fs.readFileSync(path.join(target, relative), 'utf8'),
+      fs.readFileSync(path.join(root, relative), 'utf8')
+    );
+  }
+  assert.equal(
+    fs.readFileSync(path.join(target, '.github/aw/ai-review/LICENSE'), 'utf8'),
+    fs.readFileSync(path.join(root, 'LICENSE'), 'utf8')
+  );
+  assert.equal(
+    fs.readFileSync(path.join(target, '.github/review-context.md'), 'utf8'),
+    context
+  );
+  assert.ok(!fs.existsSync(path.join(target, 'tests')));
+  assert.ok(!fs.existsSync(path.join(target, '.github/workflows/checks.yml')));
+  const lock = path.join(target, '.github/workflows/ai-review.lock.yml');
+  const installed = fs.readFileSync(lock, 'utf8');
+  assert.ok(installed.includes('.github/aw/ai-review/review.cjs'));
+  assert.ok(!installed.includes('/home/johannes'));
+  assert.ok(!installed.includes('RoadbookNavi'));
+  process.stdout.write(
+    aw(['compile', 'ai-review', '--no-check-update', '--no-logo'])
+  );
+  const metadata = (text) =>
+    text
+      .split('\n')
+      .slice(0, 2)
+      .map((line) => JSON.parse(line.slice(line.indexOf('{'))));
+  assert.deepEqual(
+    metadata(fs.readFileSync(lock, 'utf8')),
+    metadata(installed)
+  );
+  console.log(
+    'PASS: native install preserves runtime, source hashes, project context and license; excludes development files.'
+  );
+} finally {
+  fs.rmSync(target, { recursive: true, force: true });
+}

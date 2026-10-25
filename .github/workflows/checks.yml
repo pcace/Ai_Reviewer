@@ -1,0 +1,38 @@
+name: Reviewer checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Test authorization, snapshots and discussion handling
+        run: node tests/review.test.cjs
+      - name: Install the pinned workflow compiler
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh extension install github/gh-aw --pin v0.93.4
+      - name: Verify generated workflow is current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh aw compile ai-review --no-check-update --no-logo
+          git diff --exit-code -- .github/workflows/ai-review.lock.yml .github/aw/actions-lock.json
+      - uses: github/gh-aw-actions/setup@40fb427c047bb9f77324054adeb574e04c9481aa
+      - name: Test native ingestion and reply publishing
+        run: node tests/framework.test.cjs
+      - name: Install the package in an unrelated repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tests/package.test.cjs
