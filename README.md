@@ -20,14 +20,15 @@ branch are detected automatically. Optionally add `.github/review-context.md` fo
 project-specific conventions; installation does not overwrite it. Ignore generated
 `*.lock.yml` files in your formatter. No application dependencies or database.
 
-To update the **whole package**, including its JavaScript helpers:
+To upgrade, choose the desired release tag and reinstall the **whole package**:
 
 ```sh
-gh aw update https://github.com/pcace/Ai_Reviewer
+gh aw add pcace/Ai_Reviewer@v0.1.0 --force
 ```
 
-Review and commit the resulting changes. Installed copies are versioned deployment
-artifacts; maintain the source and tests here. Do not maintain separate forks of
+Replace the example tag with the release you want. This replaces package-owned
+workflow/helper files while preserving project context and repository settings.
+Review and commit the resulting changes. Installed copies are deployment artifacts; maintain the source and tests here. Do not maintain separate forks of
 the reviewer in each application repository.
 
 ## Maintain here

@@ -2,7 +2,7 @@
 
 - `node tests/review.test.cjs`: offline guards, state changes and comment metadata.
 - `node tests/package.test.cjs`: native installation in a temporary `trunk` repository;
-  preserves project context and excludes development files. Uses `gh aw` by default,
+  replaces an obsolete helper, preserves project context and excludes development files. Uses `gh aw` by default,
   or the executable specified in `GH_AW_BIN`.
 - `node tests/framework.test.cjs`: real pinned ingestion and native publication with
   mocked GitHub writes. CI installs the framework; locally set `GH_AW_ACTIONS_DIR`
