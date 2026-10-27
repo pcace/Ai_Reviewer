@@ -20,6 +20,11 @@ on:
   needs: [context]
   reaction: none
 if: needs.context.outputs.ready == 'true'
+# v0.93.4 embeds Pi's model expression in its generated shell command. This
+# output is a fixed literal below, never PR content or a repository setting.
+threat-detection-suppress:
+  - rule: CTR-006
+    reason: Pi model interpolation uses only the code-owned context.outputs.model literal.
 permissions:
   contents: read
   pull-requests: read
@@ -30,7 +35,7 @@ concurrency:
   job-discriminator: ${{ github.run_id }}
 engine:
   id: pi
-  model: openrouter/${{ vars.AI_REVIEW_MODEL }}
+  model: openrouter/${{ needs.context.outputs.model }}
   model-provider: openai
   bare: true
   env:
@@ -134,8 +139,10 @@ safe-outputs:
   threat-detection:
     engine:
       id: codex
-      model: ${{ vars.AI_REVIEW_MODEL }}
+      model: ${{ needs.context.outputs.model }}
       env:
+        # v0.93.4 discovers custom detection dependencies through engine.env.
+        REVIEW_MODEL: ${{ needs.context.outputs.model }}
         OPENAI_BASE_URL: https://openrouter.ai/api/v1
         OPENAI_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         CODEX_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
@@ -175,6 +182,9 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
+      # One code-owned OpenRouter model for review and threat detection. Passing
+      # it as an output preserves the provider/model ID with gh-aw v0.93.4.
+      model: openai/gpt-6.1-sol
       ready: ${{ steps.context.outputs.ready }}
       number: ${{ steps.context.outputs.number }}
       head: ${{ steps.context.outputs.head }}

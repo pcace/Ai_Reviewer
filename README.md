@@ -10,23 +10,33 @@ Run from the target checkout (GitHub CLI and Node.js required):
 
 ```sh
 gh extension install github/gh-aw --pin v0.93.4
-gh aw add pcace/Ai_Reviewer@v0.1.1
+gh aw add pcace/Ai_Reviewer@main
 gh secret set OPENROUTER_API_KEY
-gh variable set AI_REVIEW_MODEL --body openai/gpt-5.3-codex
 ```
+
+The workflow selects `openai/gpt-6.1-sol` directly in
+`.github/workflows/ai-review.md`; no model secret or repository variable is needed.
+To change it, edit `jobs.context.outputs.model`, then recompile with gh-aw v0.93.4.
+Review and threat detection share that value; the job output preserves
+OpenRouter's full `provider/model` ID with the pinned compiler.
+Only the API key belongs in `OPENROUTER_API_KEY`.
+
+For a pinned deployment, replace `main` with a full commit SHA or a release that
+contains this configuration. The installer records the resolved commit and file
+hashes. Older releases through v0.1.1 still require `AI_REVIEW_MODEL`.
 
 Commit the generated files and merge into the default branch. Repository and base
 branch are detected automatically. Optionally add `.github/review-context.md` for
 project-specific conventions; installation does not overwrite it. Ignore generated
 `*.lock.yml` files in your formatter. No application dependencies or database.
 
-To upgrade, choose the desired release tag and reinstall the **whole package**:
+To upgrade, choose the desired release or commit and reinstall the **whole package**:
 
 ```sh
-gh aw add pcace/Ai_Reviewer@v0.1.1 --force
+gh aw add pcace/Ai_Reviewer@main --force
 ```
 
-Replace the example tag with the release you want. This replaces package-owned
+Replace `main` with the release or commit you want. This replaces package-owned
 workflow/helper files while preserving project context and repository settings.
 Review and commit the resulting changes. Installed copies are deployment artifacts; maintain the source and tests here. Do not maintain separate forks of
 the reviewer in each application repository.

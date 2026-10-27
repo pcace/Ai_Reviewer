@@ -22,6 +22,8 @@ Use only `tests/fixtures`, keeping `consumer.mjs` unchanged:
 4. Dispatch the workflow again without changes. Expect no inference/publication.
 5. Close the PR without merging and delete its test branch.
 
-The normal secret is `OPENROUTER_API_KEY`; the model is `AI_REVIEW_MODEL`.
+The normal secret is `OPENROUTER_API_KEY`; the shared model is versioned in
+`.github/workflows/ai-review.md` at `jobs.context.outputs.model`.
+No model secret or repository variable is needed.
 Do not put credentials in comments, commits or test reports. Keep acceptance runs
 and reports in this repository; consuming application repositories are deployments.

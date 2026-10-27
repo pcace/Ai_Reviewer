@@ -91,6 +91,25 @@ try {
     metadata(fs.readFileSync(lock, 'utf8')),
     metadata(installed)
   );
+  // A fresh consumer must select both models without any repository settings.
+  const [workflow] = metadata(installed);
+  const model = preparation.match(/^      model: ([^\s${}]+)$/m)?.[1];
+  assert.ok(model, 'The preparation job must supply a literal model ID.');
+  assert.match(model, /^[a-z0-9-]+\/[a-zA-Z0-9._:-]+$/);
+  assert.equal(workflow.agent_model, 'openrouter/' + workflow.detection_agent_model);
+  assert.equal(workflow.detection_agent_model, '${{ needs.context.outputs.model }}');
+  assert.ok(installed.includes('aw-gateway/${{ needs.context.outputs.model }}'));
+  assert.match(
+    installed,
+    /^          GH_AW_MODEL_DETECTION_CODEX: \$\{\{ needs.context.outputs.model \}\}$/m,
+    'Codex must receive the full OpenRouter ID without stripping openai/.'
+  );
+  assert.match(
+    installed,
+    /^  detection:\n(?: {4}.*\n|\n)*      - context$/m,
+    'Threat detection must depend on the job that supplies its model.'
+  );
+  assert.doesNotMatch(installed, /(?:vars|secrets)\.AI_REVIEW_MODEL/);
   console.log(
     'PASS: native install/upgrade replaces runtime, preserves source hashes, project context and license; excludes development files.'
   );
